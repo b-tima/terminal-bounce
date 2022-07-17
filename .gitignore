@@ -68,3 +68,4 @@ bin/
 log/
 obj/
 debug/
+!.clang-format

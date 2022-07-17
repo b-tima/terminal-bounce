@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "example_lib.h"
+#include "terminal_bounce.h"
+
+static terminal_handle_t term_handle;
 
 int main(){
-	char* buffer = malloc(sizeof(char)*100);
-	example_function(buffer);
-	printf("%s", buffer);
-	free(buffer);
+	terminal_bounce_init(&term_handle, "Hello, Morgan!");
+
+	terminal_bounce_play(&term_handle);
 	return 0;
 }

@@ -18,13 +18,15 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
+typedef void* terminal_handle_t;
+
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
 
-void example_function(char* hello_world);
+void terminal_bounce_init(terminal_handle_t* handle, const char* text);
 
-int example_testable_function(int a);
+void terminal_bounce_play(terminal_handle_t* handle);
 
 /**********************
  *  GLOBAL VARIABLES
