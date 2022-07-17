@@ -5,8 +5,8 @@
 
 static terminal_handle_t term_handle;
 
-int main(){
-	terminal_bounce_init(&term_handle, "Hello, Morgan!");
+int main(int argc, char** argv){
+	terminal_bounce_init(&term_handle, argv[1]);
 
 	terminal_bounce_play(&term_handle);
 	return 0;

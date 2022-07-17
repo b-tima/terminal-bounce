@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <time.h>
 #include <unistd.h>
 
 /*********************
@@ -17,6 +18,9 @@
 
 // 10 fps
 #define SLEEP_PERIOD_US (100 * 1000)
+
+#define STEP_SIZE_X 1
+#define STEP_SIZE_Y 1
 
 /**********************
  *      TYPEDEFS
@@ -70,11 +74,13 @@ void terminal_bounce_init(terminal_handle_t* handle, const char* text) {
     txt_handle->box.height = 1;
     txt_handle->box.width = strlen(txt_handle->text);
 
-    txt_handle->x = 0;
-    txt_handle->y = 0;
-
-    printf("Height = %i\n", txt_handle->terminal.height);
-    printf("Width = %i\n", txt_handle->terminal.width);
+    srand(time(0));
+    txt_handle->x = (rand() % (txt_handle->terminal.width - 1 -
+                               txt_handle->box.width - 0 + 1)) +
+                    0;
+    txt_handle->y = (rand() % (txt_handle->terminal.height - 1 -
+                               txt_handle->box.height - 0 + 1)) +
+                    0;
 }
 
 void terminal_bounce_play(terminal_handle_t* handle) {
@@ -98,7 +104,7 @@ void terminal_bounce_play(terminal_handle_t* handle) {
 static void clear_terminal(void) { printf("\e[1;1H\e[2J"); }
 
 static void render_text(struct text_handle* handle) {
-    static int x_direction = 1, y_direction = 1;
+    static int x_direction = STEP_SIZE_X, y_direction = STEP_SIZE_Y;
     handle->x += x_direction;
     handle->y += y_direction;
 
@@ -107,32 +113,32 @@ static void render_text(struct text_handle* handle) {
             for (int k = 0; k < handle->terminal.width; k++) {
                 printf("#");
             }
-			continue;
+            continue;
         }
         printf("\n");
         for (int j = 0; j < handle->terminal.width; j++) {
-            if(i == handle->y && j == handle->x){
+            if (i == handle->y && j == handle->x) {
                 printf("%s", handle->text);
                 j += handle->box.width;
             }
-            if(j == 0 || j + 1 == handle->terminal.width){
+            if (j == 0 || j + 1 == handle->terminal.width) {
                 printf("#");
-            }else{
+            } else {
                 printf(" ");
             }
         }
     }
 
-    fflush(stdout);
+    if (handle->x + handle->box.width + 1 >= handle->terminal.width) {
+        x_direction = -1 * STEP_SIZE_X;
+    } else if (handle->x - 1 <= 0) {
+        x_direction = STEP_SIZE_X;
+    }
+    if (handle->y + handle->box.height + 1 >= handle->terminal.height) {
+        y_direction = -STEP_SIZE_Y;
+    } else if (handle->y - 1 <= 0) {
+        y_direction = STEP_SIZE_Y;
+    }
 
-    if (handle->x + handle->box.width + 1 == handle->terminal.width) {
-        x_direction = -1;
-    } else if (handle->x - 1 == 0) {
-        x_direction = 1;
-    }
-    if (handle->y + handle->box.height + 1 == handle->terminal.height) {
-        y_direction = -1;
-    } else if (handle->y - 1 == 0) {
-        y_direction = 1;
-    }
+    fflush(stdout);
 }
