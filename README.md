@@ -1,18 +1,4 @@
-# c-project-template
+# Terminal-bounce
 
-C project template repository by @b-tima
+Just type ```make``` and the binary will be in ```bin/terminal-bounce```
 
-# Get started
-
-First, edit the makefile to name your binary.
-
-Then, you need to install cmocka for unit testing and valgrind for debugging
-```
-sudo pacman -S --noconfirm cmocka valgrind
-```
-
-Now you're good to go!
-
-# Acknowledgement
-
-This template is inspired by https://github.com/pantuza/c-project-template
