@@ -24,6 +24,10 @@
 
 #define NEWLINE_DELIMITER "/--/"
 
+#define WALL_CHAR '#'
+#define BACKGROUND_CHAR ' '
+#define LINEBREAK_CHAR '\n'
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -168,11 +172,11 @@ static void render_text(struct text_handle* handle) {
     for (int y = 0; y < handle->terminal.height; y++) {
         if (y == 0 || y + 1 == handle->terminal.height) {
             for (int k = 0; k < handle->terminal.width; k++) {
-                printf("#");
+                printf("%c", WALL_CHAR);
             }
             continue;
         }
-        printf("\n");
+        printf("%c", LINEBREAK_CHAR);
         for (int x = 0; x < handle->terminal.width; x++) {
             for (int i = 0; i < handle->levels; i++) {
                 if (y == handle->y + i && x == handle->x) {
@@ -182,9 +186,9 @@ static void render_text(struct text_handle* handle) {
                 }
             }
             if (x == 0 || x + 1 == handle->terminal.width) {
-                printf("#");
+                printf("%c", WALL_CHAR);
             } else {
-                printf(" ");
+                printf("%c", BACKGROUND_CHAR);
             }
         }
     }
