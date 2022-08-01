@@ -112,8 +112,6 @@ void terminal_bounce_init(terminal_handle_t* handle, const char* text) {
 void terminal_bounce_play(terminal_handle_t* handle) {
     struct text_handle* txt_handle = (struct text_handle*)handle;
 
-    clear_terminal();
-
     while (1) {
         clear_terminal();
 

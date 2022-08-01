@@ -8,6 +8,7 @@
 		"random": "c",
 		"istream": "c",
 		"ostream": "c",
-		"streambuf": "c"
+		"streambuf": "c",
+		"stdlib.h": "c"
 	}
 }
