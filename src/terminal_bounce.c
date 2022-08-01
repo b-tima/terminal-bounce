@@ -22,6 +22,8 @@
 #define STEP_SIZE_X 1
 #define STEP_SIZE_Y 1
 
+#define NEWLINE_DELIMITER "/--/"
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -31,19 +33,33 @@ struct text_box {
     uint32_t height;
 };
 
+struct text_level {
+    char* text;
+    uint32_t text_len;
+};
+
 struct text_handle {
     struct text_box box;
     struct text_box terminal;
     uint32_t x;
     uint32_t y;
-    char* text;
+
+    struct text_level* text;
+    uint32_t levels;
 };
 
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 
+static struct winsize get_terminal_size(void);
+
 static void clear_terminal(void);
+
+static int count_substrings(const char* string, const char* substring);
+
+static void format_text(const char* text, struct text_level** formatted_text,
+                        uint32_t* levels);
 
 static void render_text(struct text_handle* handle);
 
@@ -63,16 +79,22 @@ void terminal_bounce_init(terminal_handle_t* handle, const char* text) {
     *handle = malloc(sizeof(struct text_handle));
     struct text_handle* txt_handle = (struct text_handle*)handle;
 
-    txt_handle->text = malloc(sizeof(char) * strlen(text));
-    memcpy(txt_handle->text, text, strlen(text));
+    format_text(text, &(txt_handle->text), &(txt_handle->levels));
 
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    struct winsize w = get_terminal_size();
     txt_handle->terminal.height = w.ws_row;
     txt_handle->terminal.width = w.ws_col;
 
-    txt_handle->box.height = 1;
-    txt_handle->box.width = strlen(txt_handle->text);
+    txt_handle->box.height = txt_handle->levels;
+
+    // Use widest textbox as box width
+    txt_handle->box.width = 0;
+    for (int i = 0; i < txt_handle->levels; i++) {
+        size_t len_i = strlen(txt_handle->text[i].text);
+        if (len_i > txt_handle->box.width) {
+            txt_handle->box.width = len_i;
+        }
+    }
 
     srand(time(0));
     txt_handle->x = (rand() % (txt_handle->terminal.width - 1 -
@@ -101,6 +123,41 @@ void terminal_bounce_play(terminal_handle_t* handle) {
  *   STATIC FUNCTIONS
  **********************/
 
+static struct winsize get_terminal_size(void) {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    return w;
+}
+
+static int count_substrings(const char* string, const char* substring) {
+    int count = 0;
+    const char* tmp = string;
+    while ((tmp = strstr(tmp, substring))) {
+        count++;
+        tmp++;
+    }
+    return count;
+}
+
+static void format_text(const char* text, struct text_level** formatted_text,
+                        uint32_t* levels) {
+    *levels = 0;
+    *formatted_text = malloc(sizeof(struct text_level) *
+                             (count_substrings(text, NEWLINE_DELIMITER) + 1));
+    char* dummy = (char*)text;
+    char* tok;
+    while ((tok = strtok(dummy, NEWLINE_DELIMITER))) {
+        (*formatted_text)[*levels].text_len = strlen(tok);
+        (*formatted_text)[*levels].text =
+            malloc(sizeof(char) * (*formatted_text)[*levels].text_len);
+        memcpy((*formatted_text)[*levels].text, tok,
+               (*formatted_text)[*levels].text_len);
+        (*levels)++;
+        tok += strlen(tok);
+        dummy = NULL;
+    }
+}
+
 static void clear_terminal(void) { printf("\e[1;1H\e[2J"); }
 
 static void render_text(struct text_handle* handle) {
@@ -108,20 +165,23 @@ static void render_text(struct text_handle* handle) {
     handle->x += x_direction;
     handle->y += y_direction;
 
-    for (int i = 0; i < handle->terminal.height; i++) {
-        if (i == 0 || i + 1 == handle->terminal.height) {
+    for (int y = 0; y < handle->terminal.height; y++) {
+        if (y == 0 || y + 1 == handle->terminal.height) {
             for (int k = 0; k < handle->terminal.width; k++) {
                 printf("#");
             }
             continue;
         }
         printf("\n");
-        for (int j = 0; j < handle->terminal.width; j++) {
-            if (i == handle->y && j == handle->x) {
-                printf("%s", handle->text);
-                j += handle->box.width;
+        for (int x = 0; x < handle->terminal.width; x++) {
+            for (int i = 0; i < handle->levels; i++) {
+                if (y == handle->y + i && x == handle->x) {
+                    printf("%s", handle->text[i].text);
+
+                    x += handle->text[i].text_len;
+                }
             }
-            if (j == 0 || j + 1 == handle->terminal.width) {
+            if (x == 0 || x + 1 == handle->terminal.width) {
                 printf("#");
             } else {
                 printf(" ");
