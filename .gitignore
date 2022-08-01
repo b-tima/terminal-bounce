@@ -62,6 +62,7 @@ dkms.conf
 # Project logs files
 /log/*
 !/log/.gitkeep
+*.log
 
 /.*
 bin/
@@ -69,3 +70,4 @@ log/
 obj/
 debug/
 !.clang-format
+!.vscode

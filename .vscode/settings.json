@@ -1,0 +1,13 @@
+{
+	"makefile.extensionOutputFolder": "./.vscode",
+	"C_Cpp.default.includePath": [
+		"${workspaceFolder}/inc"
+	],
+	"files.associations": {
+		"terminal_bounce.h": "c",
+		"random": "c",
+		"istream": "c",
+		"ostream": "c",
+		"streambuf": "c"
+	}
+}
