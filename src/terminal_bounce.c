@@ -11,6 +11,7 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
 
 /*********************
  *      DEFINES
@@ -56,9 +57,15 @@ struct text_handle {
  *  STATIC PROTOTYPES
  **********************/
 
+static void sig_handler(int sig);
+
 static struct winsize get_terminal_size(void);
 
 static void clear_terminal(void);
+
+static void hide_cursor(void);
+
+static void show_cursor(void);
 
 static int count_substrings(const char* string, const char* substring);
 
@@ -70,6 +77,8 @@ static void render_text(struct text_handle* handle);
 /**********************
  *  STATIC VARIABLES
  **********************/
+
+static volatile int keep_running = 1;
 
 /**********************
  *      MACROS
@@ -112,6 +121,10 @@ void terminal_bounce_init(terminal_handle_t* handle, const char* text) {
 void terminal_bounce_play(terminal_handle_t* handle) {
     struct text_handle* txt_handle = (struct text_handle*)handle;
 
+    signal(SIGINT, sig_handler);
+
+    hide_cursor();
+
     while (1) {
         clear_terminal();
 
@@ -119,11 +132,17 @@ void terminal_bounce_play(terminal_handle_t* handle) {
 
         usleep(SLEEP_PERIOD_US);
     }
+
+    show_cursor();
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+static void sig_handler(int sig){
+    keep_running = 0;
+}
 
 static struct winsize get_terminal_size(void) {
     struct winsize w;
@@ -161,6 +180,14 @@ static void format_text(const char* text, struct text_level** formatted_text,
 }
 
 static void clear_terminal(void) { printf("\e[1;1H\e[2J"); }
+
+static void hide_cursor(void){
+    printf("\e[?25l");
+}
+
+static void show_cursor(void){
+    printf("\e[?25h");
+}
 
 static void render_text(struct text_handle* handle) {
     static int x_direction = STEP_SIZE_X, y_direction = STEP_SIZE_Y;
