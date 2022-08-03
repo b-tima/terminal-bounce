@@ -125,7 +125,7 @@ void terminal_bounce_play(terminal_handle_t* handle) {
 
     hide_cursor();
 
-    while (1) {
+    while (keep_running) {
         clear_terminal();
 
         render_text(txt_handle);
